@@ -18,7 +18,8 @@ username="JukeBot"
 clientId= "a59b157c52974cb4a79a865279f9eb88"
 clientSecret="6ca65813991c48be9ea53fbd3ae0bd5b"
 
-scope = 'user-library-read'
+scope = 'playlist-read-privateplaylist-modify-public playlist-modify-private playlist-read-collaborative user-read-private user-read-birthdate user-read-email     user-read-playback-state user-read-currently-playing user-modify-playback-state app-remote-control streaming user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-read user-library-modify'
+
 
 if len(sys.argv) > 1:
      username = sys.argv[1]
@@ -36,7 +37,6 @@ token = auth.get_access_token()
 
 ntoptrack=5
 nb_recos=10
-
 	
 def gender_features(word): 
     return {'last_letter': word[-1]}
@@ -101,15 +101,19 @@ async def on_message(message):
 		msg = await list_members()
 		await client.send_message(message.channel, msg)
 	elif message.content.startswith('!jukebox'):
-		words = word_tokenize(message.content)
-		ps = PorterStemmer()
- 
-		msg = call_spotify(words[2])
+		#words = word_tokenize(message.content)
+		#ps = PorterStemmer()
+		
+		msg = call_spotify(message.content[9:])
+		
 		await client.send_message(message.channel, msg)
 	elif message.content.startswith('!call'):
-		await joinvoice()
+		author = message.author
+		await joinvoice(author)
 		print('jarrive')
-
+	elif message.content.startswith('!leave'):
+		author = message.author
+		await leavevoice()
 		
 
 @client.event
@@ -131,11 +135,16 @@ async def list_members():
 	print('------')
 	return msg
 	
-@client.command(pass_context=True)
-async def joinvoice(ctx):
+#@client.command(pass_context=True)
+async def joinvoice(author):
 	#"""Joins your voice channel"""
-	author = ctx.message.author
 	voice_channel = author.voice_channel
 	await client.join_voice_channel(voice_channel)
+	
+@client.command(pass_context = True)
+async def leavevoice(ctx):
+    for x in client.voice_clients:
+        if(x.server == ctx.message.server):
+            return await x.disconnect()
 
 client.run(TOKEN)
