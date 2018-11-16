@@ -106,7 +106,9 @@ async def on_message(message):
  
 		msg = call_spotify(words[2])
 		await client.send_message(message.channel, msg)
-		
+	elif message.content.startswith('!call'):
+		await joinvoice()
+		print('jarrive')
 
 		
 
@@ -128,5 +130,12 @@ async def list_members():
 			
 	print('------')
 	return msg
+	
+@client.command(pass_context=True)
+async def joinvoice(ctx):
+	#"""Joins your voice channel"""
+	author = ctx.message.author
+	voice_channel = author.voice_channel
+	await client.join_voice_channel(voice_channel)
 
 client.run(TOKEN)
