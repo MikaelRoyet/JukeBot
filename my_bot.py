@@ -2,6 +2,8 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
+from discord import opus
+from discord import Game
 import asyncio
 import nltk
 from nltk.stem import PorterStemmer
@@ -80,15 +82,6 @@ def call_spotify(artist):
 	return ret
 
 
- 
-# Load data and training 
-names = ([(name, 'male') for name in names.words('male.txt')] + 
-	 [(name, 'female') for name in names.words('female.txt')])
-featuresets = [(gender_features(n), g) for (n,g) in names]
-featuresets = [(gender_features(n), g) for (n,g) in names] 
-train_set = featuresets
-classifier = nltk.NaiveBayesClassifier.train(train_set) 
-
 TOKEN = 'NTEyMzgxNjIyODgwOTYwNTEz.Ds66FA.72uG98AbUTMBOF-phXYedkMigGM'
 
 client = discord.Client()
@@ -147,11 +140,13 @@ async def joinvoice(author):
 
 @client.event
 async def leavevoice(server):
-    voice_client = client.voice_client_in(server)
-    if voice_client:
-        await voice_client.disconnect()
-        print("Bot left the voice channel")
-    else:
-        print("Bot was not in channel")
+	print(server)
+	voice_client = client.voice_client_in(server)
+	print(voice_client)
+	if voice_client:
+		await voice_client.disconnect()
+		print("Bot left the voice channel")
+	else:
+		print("Bot was not in channel")
 
 client.run(TOKEN)
