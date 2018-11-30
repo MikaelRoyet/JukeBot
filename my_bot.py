@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
 import asyncio
-#import chalk
 import nltk
 from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -24,7 +23,6 @@ bot = commands.Bot(command_prefix=prefix)
 username="JukeBot"
 clientId= "a59b157c52974cb4a79a865279f9eb88"
 clientSecret="6ca65813991c48be9ea53fbd3ae0bd5b"
-
 scope = 'playlist-read-privateplaylist-modify-public playlist-modify-private playlist-read-collaborative user-read-private user-read-birthdate user-read-email     user-read-playback-state user-read-currently-playing user-modify-playback-state app-remote-control streaming user-follow-modify user-follow-read user-top-read user-read-recently-played user-library-read user-library-modify'
 
 
@@ -96,44 +94,41 @@ TOKEN = 'NTEyMzgxNjIyODgwOTYwNTEz.Ds66FA.72uG98AbUTMBOF-phXYedkMigGM'
 client = discord.Client()
 
 
-@bot.event
+@client.event
 async def on_message(message):
 	# we do not want the bot to reply to itself
-	if message.author == bot.user:
+	if message.author == client.user:
 		return
 
 	if message.content.startswith('!members'):
 		"""msg = 'Hello {0.author.mention}'.format(message)"""
 		"""await client.send_message(message.channel, msg)"""
 		msg = await list_members()
-		await bot.send_message(message.channel, msg)
+		await client.send_message(message.channel, msg)
 	elif message.content.startswith('!jukebox'):
 		#words = word_tokenize(message.content)
 		#ps = PorterStemmer()
-		
 		msg = call_spotify(message.content[9:])
+		await client.send_message(message.channel, msg)
 		
-		await bot.send_message(message.channel, msg)
-	"""elif message.content.startswith('!call'):
-		await joinvoice()"""
-	"""elif message.content.startswith('!call'):
+	elif message.content.startswith('!call'):
 		author = message.author
-		await joinvoice(author)
+		vc = await joinvoice(author)
 		print('jarrive')
 	elif message.content.startswith('!leave'):
 		author = message.author
-		await leavevoice()"""
+		await leavevoice(message.server)
 
 
-@bot.event
+@client.event
 async def on_ready():
 	print('Logged in as')
-	print(bot.user.name)
-	print(bot	.user.id)
+	print(client.user.name)
+	print(client	.user.id)
 	print('------')
     
     
-@bot.event
+@client.event
 async def list_members():
 	print('Liste des membres')
 	msg = 'liste des membres \n'
@@ -144,18 +139,19 @@ async def list_members():
 	print('------')
 	return msg
 	
-@bot.command()
-async def joinvoice(ctx):
+@client.event
+async def joinvoice(author):
 	#"""Joins your voice channel"""
-	author = ctx.message.author
 	voice_channel = author.voice_channel
-	
+	return await client.join_voice_channel(voice_channel)
 
-@bot.command()
-async def leavevoice(ctx):
-	print('hellooooo')
-	for x in client.voice_clients:
-		if(x.server == ctx.message.server):
-			return await x.disconnect()
+@client.event
+async def leavevoice(server):
+    voice_client = client.voice_client_in(server)
+    if voice_client:
+        await voice_client.disconnect()
+        print("Bot left the voice channel")
+    else:
+        print("Bot was not in channel")
 
-bot.run(TOKEN)
+client.run(TOKEN)
